@@ -1,5 +1,5 @@
 const express = require('express')
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const cors = require('cors')
 require('dotenv').config()
 const app = express()
@@ -51,17 +51,36 @@ app.listen(port, () => {
 
 async function run() {
     try {
-        // Connect the client to the server	(optional starting in v4.7)
-        await client.connect();
+
 
 
         const productCollection = client.db('xcelliance').collection('products');
+        const techNewsCollection = client.db('xcelliance').collection('technews');
+
+
 
         //get all products from database
         app.get('/products', async (req, res) => {
             const products = await productCollection.find().toArray();
             res.send(products)
         })
+
+        //get single product from database
+        app.get('/products/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const product = await productCollection.findOne(query);
+            res.send(product)
+        })
+
+
+        //get all tech news from database
+        app.get('/technews', async (req, res) => {
+            const technews = await techNewsCollection.find().toArray();
+            res.send(technews)
+        })
+
+
 
 
 
