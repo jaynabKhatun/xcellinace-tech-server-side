@@ -61,9 +61,20 @@ async function run() {
 
         //get all products from database
         app.get('/products', async (req, res) => {
-            const products = await productCollection.find().toArray();
+
+            const filter = req.query;
+            console.log(filter);
+
+            const query = {
+                tags: { $regex: filter.search, $options: 'i' },
+            }
+
+
+
+            const products = await productCollection.find(query).toArray();
             res.send(products)
         })
+
 
         //get single product from database
         app.get('/products/:id', async (req, res) => {
