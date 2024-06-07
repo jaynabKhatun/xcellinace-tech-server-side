@@ -61,32 +61,27 @@ async function run() {
 
         //get all products from database
         app.get('/products', async (req, res) => {
-            
-            console.log('pagination',req.query);
-           
-            const { search, page, size } = req.query;
-            console.log('page',page);
-            console.log('size',size);
-            
-           
-           
 
-            // const filter = req.query;
-            // // console.log(filter);
+            const { search} = req.query;
+            const page = parseInt(req.query.page);
+            const size = parseInt(req.query.size);
+
+
+
+
             const searchQuery = search ? String(search) : '';
 
-            // const query = {
-            //     tags: { $regex: filter.search, $options: 'i' }
-
-
-            // }
             const query = searchQuery ? {
                 tags: { $regex: searchQuery, $options: 'i' }
             } : {};
             console.log('query', query);
 
 
-            const products = await productCollection.find(query).toArray();
+            const products = await productCollection.find(query)
+
+                .skip(page * size)
+                .limit(size)
+                .toArray();
             res.send(products)
         })
 
