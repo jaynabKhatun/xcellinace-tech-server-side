@@ -74,7 +74,7 @@ async function run() {
             const query = searchQuery ? {
                 tags: { $regex: searchQuery, $options: 'i' }
             } : {};
-            console.log('query', query);
+
 
 
             const products = await productCollection.find(query)
@@ -84,11 +84,24 @@ async function run() {
                 .toArray();
             res.send(products)
         })
+
+        //post item to database
         app.post('/products', async (req, res) => {
             const product = req.body;
             const result = await productCollection.insertOne(product);
             res.json(result)
         })
+
+        //delete product from database
+        app.delete('/products/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const result = await productCollection.deleteOne(query);
+            res.send(result)
+        })
+
+
+
 
         //count
         app.get('/products/count', async (req, res) => {
@@ -104,6 +117,25 @@ async function run() {
             const product = await productCollection.findOne(query);
             res.send(product)
         })
+
+
+
+        //get email specifiq data
+        app.get('/product', async (req, res) => {
+            console.log(req.query.userEmail);
+            let query = {};
+            if (req.query?.email) {
+                console.log('User Email:', req.query.userEmail);
+                query = { email: req.query.email };
+            }
+            console.log('Query:', query);
+
+            const result = await productCollection.find(query).toArray();
+            res.send(result)
+
+
+        })
+
 
 
         //get all tech news from database
