@@ -62,7 +62,7 @@ async function run() {
         //get all products from database
         app.get('/products', async (req, res) => {
 
-            const { search} = req.query;
+            const { search } = req.query;
             const page = parseInt(req.query.page);
             const size = parseInt(req.query.size);
 
@@ -83,6 +83,11 @@ async function run() {
                 .limit(size)
                 .toArray();
             res.send(products)
+        })
+        app.post('/products', async (req, res) => {
+            const product = req.body;
+            const result = await productCollection.insertOne(product);
+            res.json(result)
         })
 
         //count
