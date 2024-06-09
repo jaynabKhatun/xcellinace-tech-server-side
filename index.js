@@ -100,6 +100,36 @@ async function run() {
             res.send(result)
         })
 
+        app.get('/productsUp/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const product = await productCollection.findOne(query);
+            // const result = await productCollection.updateOne(query, { $set: { upvotes: product.upvotes + 1 } });
+            res.send(product)
+
+
+        })
+
+        app.patch('/productsUp/:id', async (req, res) => {
+            const item = req.body;
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const updatedDoc = {
+                $set: {
+                    name: item.name,
+                    description: item.description,
+                    tags: item.tags,
+                    image: item.image,
+                    link: item.link,
+                    category: item.category,
+                }
+            }
+            const result = await productCollection.updateOne(filter, updatedDoc);
+            res.send(result)
+
+
+        })
+
 
 
 
