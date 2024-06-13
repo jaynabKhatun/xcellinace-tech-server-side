@@ -56,6 +56,19 @@ async function run() {
 
         const productCollection = client.db('xcelliance').collection('products');
         const techNewsCollection = client.db('xcelliance').collection('technews');
+        const usersCollection = client.db('xcelliance').collection('users');
+
+        app.post('/users', async (req, res) => {
+            const user = req.body;
+            //check if user already exists
+            const query = { email: user.email }
+            const userExists = await usersCollection.findOne(query);
+            if (userExists) {
+                return res.send({ message: 'User already exists', insertedId: null })
+            }
+            const result = await usersCollection.insertOne(user);
+            res.send(result)
+        })
 
 
 
