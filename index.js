@@ -1,5 +1,5 @@
 const express = require('express')
-const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId, Timestamp } = require('mongodb');
 const cors = require('cors')
 require('dotenv').config()
 const app = express()
@@ -58,18 +58,42 @@ async function run() {
         const techNewsCollection = client.db('xcelliance').collection('technews');
         const usersCollection = client.db('xcelliance').collection('users');
 
-        app.post('/users', async (req, res) => {
+        //save a user data to database
+        app.put('/user', async (req, res) => {
             const user = req.body;
-            //check if user already exists
             const query = { email: user.email }
+            const options = { upsert: true }
+            const updatedDoc = {
+                $set: {
+                    ...user,
+                    Timestamp: Date.now()
+                }
+            }
+
             const userExists = await usersCollection.findOne(query);
             if (userExists) {
                 return res.send({ message: 'User already exists', insertedId: null })
             }
-            const result = await usersCollection.insertOne(user);
+            const result = await usersCollection.updateOne(query, updatedDoc, options);
             res.send(result)
         })
 
+        //get all users from database
+        app.get('/users', async (req, res) => {
+            const users = await usersCollection.find().toArray();
+            res.send(users)
+        })
+
+
+
+        //get user information from database
+        app.get('/user/:email', async (req, res) => {
+            const email = req.params.email;
+            const result = await usersCollection.findOne({ email });
+            res.send(result)
+
+
+        })
 
 
         //get all products from database
