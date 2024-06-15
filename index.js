@@ -11,6 +11,7 @@ const port = process.env.PORT || 5000
 
 
 const corsOptions = {
+
     origin: [
         'http://localhost:5173',
         'http://localhost:5174',
@@ -82,6 +83,22 @@ async function run() {
         app.get('/users', async (req, res) => {
             const users = await usersCollection.find().toArray();
             res.send(users)
+        })
+
+        //update user role from database
+        app.patch('/users/update/:email', async (req, res) => {
+            const email = req.params.email;
+            const user = req.body;
+            const query = { email };
+            const updatedDoc = {
+                $set: {
+                    ...user,
+                    Timestamp: Date.now(),
+                }
+            }
+            const result = await usersCollection.updateOne(query, updatedDoc);
+            res.send(result)
+
         })
 
 
