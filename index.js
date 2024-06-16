@@ -1,6 +1,7 @@
 const express = require('express')
 const { MongoClient, ServerApiVersion, ObjectId, Timestamp } = require('mongodb');
 const cors = require('cors')
+const jwt = require('jsonwebtoken');
 require('dotenv').config()
 const app = express()
 const port = process.env.PORT || 5000
@@ -59,6 +60,62 @@ async function run() {
         const techNewsCollection = client.db('xcelliance').collection('technews');
         const usersCollection = client.db('xcelliance').collection('users');
 
+
+        //jwt related api
+        app.post('/jwt', async (req, res) => {
+            const user = req.body;
+            const token = jwt.sign(user, process.env.ACCESS_TOKEN, { expiresIn: '1h' })
+            res.send({ token: token })
+
+        })
+
+        //verify token
+        const verifyToken = async (req, res, next) => {
+            if (!req.headers.authorization) {
+                return res.status(401).send({ message: 'Unauthorized!!!' })
+            }
+            const token = req.headers.authorization.split(' ')[1];
+            jwt.verify(token, process.env.ACCESS_TOKEN, (err, decode) => {
+                if (err) {
+                    return res.status(401).send({ message: 'Unauthorized!!!' })
+                }
+                req.user = decode;
+                next();
+            })
+
+        }
+
+
+        //verify admin middleware
+        const verifyAdmin = async (req, res, next) => {
+            console.log('hello from verify admin middleware')
+            const user = req.user;
+            const query = { email: user?.email };
+            const result = await usersCollection.findOne(query);
+            if (!result || result.role !== 'admin') {
+                return res.status(401).send({ message: 'Unauthorized access!!!' })
+            }
+            next();
+
+
+        }
+
+        //verify moderator middleware
+
+        const verifyModerator = async (req, res, next) => {
+            const user = req.user;
+            const query = { email: user?.email };
+            const result = await usersCollection.findOne(query);
+            if (!result || result.role !== 'moderator') {
+                return res.status(401).send({ message: 'Unauthorized moderator access!!!' })
+            }
+            next();
+
+        }
+
+
+
+
         //save a user data to database
         app.put('/user', async (req, res) => {
             const user = req.body;
@@ -80,7 +137,7 @@ async function run() {
         })
 
         //get all users from database
-        app.get('/users', async (req, res) => {
+        app.get('/users', verifyToken, verifyAdmin, async (req, res) => {
             const users = await usersCollection.find().toArray();
             res.send(users)
         })
