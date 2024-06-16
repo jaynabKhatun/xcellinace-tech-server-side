@@ -294,6 +294,20 @@ async function run() {
             res.send(result)
         })
 
+        //get all reported products from database
+        app.get('/report', async (req, res) => {
+            const reports = await reportedProductCollection.find().toArray();
+            res.send(reports)
+        })
+
+        //delete report from database
+        app.delete('/reportedProducts/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const result = await reportedProductCollection.deleteOne(query);
+            res.send(result)
+        })
+
 
 
 
