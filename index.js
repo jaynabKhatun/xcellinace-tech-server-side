@@ -59,6 +59,7 @@ async function run() {
         const productCollection = client.db('xcelliance').collection('products');
         const techNewsCollection = client.db('xcelliance').collection('technews');
         const usersCollection = client.db('xcelliance').collection('users');
+        const reportedProductCollection = client.db('xcelliance').collection('reportedProducts');
 
 
         //jwt related api
@@ -285,6 +286,13 @@ async function run() {
             res.send(technews)
         })
 
+
+        //post report to database
+        app.post('/report', async (req, res) => {
+            const report = req.body;
+            const result = await reportedProductCollection.insertOne(report);
+            res.send(result)
+        })
 
 
 
