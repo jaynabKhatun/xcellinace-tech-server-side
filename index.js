@@ -1,6 +1,8 @@
 const express = require('express')
 const { MongoClient, ServerApiVersion, ObjectId, Timestamp } = require('mongodb');
 const cors = require('cors')
+const stripe = require('stripe')(process.env.SECRET_KEY);
+
 const jwt = require('jsonwebtoken');
 require('dotenv').config()
 const app = express()
@@ -69,6 +71,34 @@ async function run() {
             res.send({ token: token })
 
         })
+
+
+
+        //create-payment-intent
+        app.post('/create-payment-intent', async (req, res) => {
+            const price = req.body.price;
+            const priceInCents = parseFloat(price) * 100;
+
+            if (!price || priceInCents < 1) {
+                return res.status(400).send({ message: 'Invalid Price' })
+            }
+            //genarate client secret key
+            const { client_secret } = await stripe.paymentIntents.create({
+                amount: priceInCents,
+                currency: "usd",
+
+                automatic_payment_methods: {
+                    enabled: true,
+                },
+            })
+            console.log(client_secret)
+            res.send({ clientSecret: client_secret })
+
+
+
+        })
+
+
 
         //verify token
         const verifyToken = async (req, res, next) => {
@@ -158,6 +188,18 @@ async function run() {
             res.send(result)
 
         })
+
+        //get price from database
+        app.get('/users/price/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email: email };
+            const user = await usersCollection.findOne(query, { projection: { price: 1, _id: 0 } });
+            console.log(user)
+            res.send(user)
+
+
+        });
+
 
 
 
