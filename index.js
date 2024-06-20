@@ -1,7 +1,7 @@
 const express = require('express')
 const { MongoClient, ServerApiVersion, ObjectId, Timestamp } = require('mongodb');
 const cors = require('cors')
-const stripe = require('stripe')(process.env.SECRET_KEY);
+const stripe = require('stripe')('sk_test_51PMQnjP5uy87kv3G8YTS6dRufAMmq9sUohi1bxFbh8vkq7Ebck9cLLHIK5KNeLyPLvaeEsgOYkUqjfF8bvFvY5Xk00ZGeNyyjd');
 
 const jwt = require('jsonwebtoken');
 require('dotenv').config()
@@ -62,6 +62,8 @@ async function run() {
         const techNewsCollection = client.db('xcelliance').collection('technews');
         const usersCollection = client.db('xcelliance').collection('users');
         const reportedProductCollection = client.db('xcelliance').collection('reportedProducts');
+        const verifiedCustomerCollection = client.db('xcelliance').collection('verifiedCustomers');
+        const CustomerReviewCollection = client.db('xcelliance').collection('reviews');
 
 
         //jwt related api
@@ -76,24 +78,15 @@ async function run() {
 
         //create-payment-intent
         app.post('/create-payment-intent', async (req, res) => {
-            const price = req.body.price;
-            const priceInCents = parseFloat(price) * 100;
-
-            if (!price || priceInCents < 1) {
-                return res.status(400).send({ message: 'Invalid Price' })
-            }
-            //genarate client secret key
-            const { client_secret } = await stripe.paymentIntents.create({
-                amount: priceInCents,
-                currency: "usd",
-
-                automatic_payment_methods: {
-                    enabled: true,
-                },
-            })
-            console.log(client_secret)
-            res.send({ clientSecret: client_secret })
-
+            const { price } = req.body;
+            console.log('inside', price)
+            const amount = (price) * 100;
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount: amount,
+                currency: 'usd',
+                payment_method_types: ['card'],
+            });
+            res.send({ clientSecret: paymentIntent.client_secret })
 
 
         })
@@ -349,6 +342,48 @@ async function run() {
             const result = await reportedProductCollection.deleteOne(query);
             res.send(result)
         })
+
+
+        //verifyed customer save to database
+        app.post('/verifyedCustomer', async (req, res) => {
+            const customer = req.body;
+            const result = await verifiedCustomerCollection.insertOne(customer)
+            res.send({ result })
+        })
+
+
+
+        //get status from database
+        app.get('/users/status/:status', async (req, res) => {
+            const email = req.params.email;
+            const query = { email: email };
+            const user = await verifiedCustomerCollection.findOne(query, { projection: { status: 1, _id: 0 } });
+            console.log(user)
+            res.send(user)
+
+
+        });
+
+
+
+        //post a review
+        app.post('/review', async (req, res) => {
+            const review = req.body;
+            const result = await CustomerReviewCollection.insertOne(review);
+            res.send(result)
+        })
+
+        //admin state
+        app.get('/admin-state', async (req, res) => {
+            const totalUsers = await usersCollection.estimatedDocumentCount();
+            const totalProducts = await productCollection.estimatedDocumentCount();
+            const totalReviews = await CustomerReviewCollection.estimatedDocumentCount();
+            console.log(totalUsers, totalProducts, totalReviews)
+            res.send({ totalUsers, totalProducts, totalReviews })
+        })
+
+
+
 
 
 
