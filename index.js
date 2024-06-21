@@ -383,6 +383,12 @@ async function run() {
         })
 
 
+       //get all requested products from database for modartor
+       app.get('/requestedProducts', async (req, res) => {
+        const requestedProducts = await  productCollection.find().toArray();
+        res.send(requestedProducts)     
+       })
+
 
 
 
