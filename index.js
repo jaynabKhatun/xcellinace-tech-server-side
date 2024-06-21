@@ -16,8 +16,8 @@ const port = process.env.PORT || 5000
 const corsOptions = {
 
     origin: [
-        'http://localhost:5173',
-        'http://localhost:5174',
+        'https://xcelliance.web.app',
+        'https://xcelliance.firebaseapp.com',
 
     ],
     credentials: true,
@@ -383,11 +383,11 @@ async function run() {
         })
 
 
-       //get all requested products from database for modartor
-       app.get('/requestedProducts', async (req, res) => {
-        const requestedProducts = await  productCollection.find().toArray();
-        res.send(requestedProducts)     
-       })
+        //get all requested products from database for modartor
+        app.get('/requestedProducts', async (req, res) => {
+            const requestedProducts = await productCollection.find().toArray();
+            res.send(requestedProducts)
+        })
 
 
 
