@@ -385,7 +385,7 @@ async function run() {
       res.send(product);
     });
 
-    app.patch("/cupon/:id", async (req, res) => {
+    app.put("/cupon/:id", async (req, res) => {
       const item = req.body;
       console.log(item);
       const id = req.params.id;
