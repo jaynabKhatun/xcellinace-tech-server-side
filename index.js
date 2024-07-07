@@ -154,6 +154,17 @@ async function run() {
       res.send(result);
     });
 
+    //  update status from database for verified status
+    app.patch("/users/verify/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const updateDoc = {
+        $set: { status: "verified" },
+      };
+      const result = await usersCollection.updateOne(query, updateDoc);
+      res.send(result);
+    });
+
     //get all users from database
     app.get("/users", verifyToken, verifyAdmin, async (req, res) => {
       const users = await usersCollection.find().toArray();
