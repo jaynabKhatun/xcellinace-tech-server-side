@@ -171,6 +171,14 @@ async function run() {
       res.send(users);
     });
 
+    // Get the count of products added by a user
+    app.get("/products/count/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const count = await productCollection.countDocuments(query);
+      res.send({ count });
+    });
+
     //update user role from database
     app.patch("/users/update/:email", async (req, res) => {
       const email = req.params.email;
