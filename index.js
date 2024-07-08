@@ -68,6 +68,7 @@ async function run() {
       .db("xcelliance")
       .collection("reviews");
     const CuponCollection = client.db("xcelliance").collection("cupons");
+    const UpvoteCollection = client.db("xcelliance").collection("upvote");
 
     //jwt related api
     app.post("/jwt", async (req, res) => {
@@ -368,14 +369,13 @@ async function run() {
       const review = await CustomerReviewCollection.findOne(query);
       res.send(review);
     });
-    
+
     app.get("/reviews/product/:productId", async (req, res) => {
       const productId = req.params.id;
       const query = { productId: new ObjectId(productId) };
       const reviews = await CustomerReviewCollection.find(query).toArray();
       res.send(reviews);
     });
-
 
     //admin state
     app.get("/admin-state", async (req, res) => {
@@ -438,6 +438,30 @@ async function run() {
         },
       };
       const result = await CuponCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+    });
+
+    // // //post upvote to database
+    // app.post("/upvote", async (req, res) => {
+    //   const item = req.body;
+    //   console.log(item);
+    //   const result = await UpvoteCollection.insertOne(item);
+    //   res.send(result);
+    // });
+
+    app.patch("/upvote", async (req, res) => {
+      const { productId, userId } = req.body;
+      if (!product) {
+        return res.status(404).send("Product not found");
+      }
+      // Add userId to the upvotes array and increment upvote count
+      const result = await productCollection.updateOne(
+        { _id: new ObjectId(productId) },
+        {
+          $push: { upvotes: userId },
+          $inc: { upvoteCount: 1 },
+        }
+      );
       res.send(result);
     });
 
