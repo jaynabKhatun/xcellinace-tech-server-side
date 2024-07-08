@@ -355,6 +355,27 @@ async function run() {
       const result = await CustomerReviewCollection.insertOne(review);
       res.send(result);
     });
+    //get all reviews from database
+    app.get("/reviews", async (req, res) => {
+      const reviews = await CustomerReviewCollection.find().toArray();
+      res.send(reviews);
+    });
+
+    //get single review from database
+    app.get("/reviews/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const review = await CustomerReviewCollection.findOne(query);
+      res.send(review);
+    });
+    
+    app.get("/reviews/product/:productId", async (req, res) => {
+      const productId = req.params.id;
+      const query = { productId: new ObjectId(productId) };
+      const reviews = await CustomerReviewCollection.find(query).toArray();
+      res.send(reviews);
+    });
+
 
     //admin state
     app.get("/admin-state", async (req, res) => {
